@@ -45,6 +45,7 @@ func (p *ReverseProxy) HandleRequest(res http.ResponseWriter, req *http.Request)
 	} else {
 		res.Header().Set("Access-Control-Allow-Origin", "")
 		log.Println("Origin not allowed")
+		log.Println("Origin: ", origin)
 	}
 	req.URL.Host = p.target.Host
 	req.URL.Scheme = p.target.Scheme
@@ -61,12 +62,16 @@ func (p *ReverseProxy) HandleRequest(res http.ResponseWriter, req *http.Request)
 	p.proxy.ServeHTTP(res, req) // serve the request
 }
 func main() {
+	log.Println("Starting reverse proxy server")
+	log.Println("Version: 0.0.1")
+	log.Println("Loading .env file")
 	// Load .env file
-	err := godotenv.Load()
+	err := godotenv.Load("config/.env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading config/.env file")
 	}
 	proxy := NewReverseProxy(os.Getenv("UPSTREAM_DOMAIN"))
 	http.HandleFunc("/", proxy.HandleRequest)
+	log.Println("Listening on port 3000")
 	http.ListenAndServe(":3000", nil)
 }
